@@ -1,0 +1,496 @@
+{
+  "nodes": [
+    {
+      "parameters": {
+        "rule": {
+          "interval": [
+            {
+              "field": "weeks",
+              "triggerAtDay": [
+                1
+              ]
+            }
+          ]
+        }
+      },
+      "type": "n8n-nodes-base.scheduleTrigger",
+      "typeVersion": 1.2,
+      "position": [
+        120,
+        135
+      ],
+      "id": "90e6e7e6-d5d7-449c-ad33-ecc17c6b3b48",
+      "name": "Schedule Trigger"
+    },
+    {
+      "parameters": {
+        "documentId": {
+          "__rl": true,
+          "value": "1l9NSW4GjtCSNMuFI1-rCCzfD_eu2agjTdZ44f0MffNs",
+          "mode": "list",
+          "cachedResultName": "N8N Wayback Machine Backup",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1l9NSW4GjtCSNMuFI1-rCCzfD_eu2agjTdZ44f0MffNs/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "gid=0",
+          "mode": "list",
+          "cachedResultName": "Sheet1",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1l9NSW4GjtCSNMuFI1-rCCzfNs/edit#gid=0"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.5,
+      "position": [
+        340,
+        135
+      ],
+      "id": "cf00791d-ca70-4413-a938-b5d7108f46a8",
+      "name": "Google Sheets",
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "9mrKEQ7sLS5Z8BsF",
+          "name": "Google Sheets account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "url": "=https://web.archive.org/save/ {{ $json.URLs }}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        780,
+        -60
+      ],
+      "id": "398ce2c2-7bd1-4f5e-bf97-d1e7b785c9c5",
+      "name": "HTTP Request",
+      "onError": "continueRegularOutput"
+    },
+    {
+      "parameters": {
+        "operation": "extractHtmlContent",
+        "extractionValues": {
+          "values": [
+            {
+              "key": "archived_url",
+              "cssSelector": "#wm-ipp-print"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.html",
+      "typeVersion": 1.2,
+      "position": [
+        1280,
+        40
+      ],
+      "id": "b83dc41e-eb51-4991-84de-0df5bab6d281",
+      "name": "HTML",
+      "onError": "continueRegularOutput"
+    },
+    {
+      "parameters": {
+        "jsCode": "const raw = $json[\"archived_url\"];\nconst match = raw.match(/https:\\/\\/web\\.archive\\.org\\/web\\/[^\\s]+/);\nreturn match ? [{ archived_url_clean: match[0] }] : [];\n"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1500,
+        -320
+      ],
+      "id": "1504947c-e211-4961-86fe-358497bd9df9",
+      "name": "Code"
+    },
+    {
+      "parameters": {
+        "select": "channel",
+        "channelId": {
+          "__rl": true,
+          "value": "C04TW3DEWQY",
+          "mode": "list",
+          "cachedResultName": "random"
+        },
+        "text": "=Backup URL:  {{ $json.archived_url_clean }}",
+        "otherOptions": {}
+      },
+      "type": "n8n-nodes-base.slack",
+      "typeVersion": 2.3,
+      "position": [
+        2100,
+        -80
+      ],
+      "id": "2f3ba436-680e-4e08-a84e-e01f944cd7f6",
+      "name": "Slack",
+      "webhookId": "84f64599-b7cb-40e0-a380-56704b0a88f7",
+      "credentials": {
+        "slackApi": {
+          "id": "32XeGzwIMEfu4VCu",
+          "name": "Slack account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "amount": 60
+      },
+      "type": "n8n-nodes-base.wait",
+      "typeVersion": 1.1,
+      "position": [
+        2280,
+        240
+      ],
+      "id": "58ac7f4d-82fc-4c66-8fe9-6a7f4311220c",
+      "name": "Wait",
+      "webhookId": "568869a6-882a-4b93-9cec-caf229c7ad46"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "loose",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "91852010-d467-4284-ba1c-cf0d7c35c03a",
+              "leftValue": "={{ $json }}",
+              "rightValue": "#wm-ipp-print",
+              "operator": {
+                "type": "string",
+                "operation": "notContains"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "looseTypeValidation": true,
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        1000,
+        -140
+      ],
+      "id": "8a6bb021-9253-44ca-9aac-b17eb9d97124",
+      "name": "If"
+    },
+    {
+      "parameters": {
+        "select": "channel",
+        "channelId": {
+          "__rl": true,
+          "value": "C04TW3DEWQY",
+          "mode": "list",
+          "cachedResultName": "random"
+        },
+        "text": "=Not able to crawl:  {{ $('Google Sheets').item.json.URLs }}\n\nReason:\n{{ $json.message.content }}",
+        "otherOptions": {
+          "includeLinkToWorkflow": false
+        }
+      },
+      "type": "n8n-nodes-base.slack",
+      "typeVersion": 2.3,
+      "position": [
+        1960,
+        80
+      ],
+      "id": "47e470b7-c07a-4011-b67b-f59e1788a5a3",
+      "name": "Slack1",
+      "webhookId": "0bb302dd-c197-4763-9cfb-f7679f63b039",
+      "credentials": {
+        "slackApi": {
+          "id": "32XeGzwIMEfu4VCu",
+          "name": "Slack account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "type": "n8n-nodes-base.splitInBatches",
+      "typeVersion": 3,
+      "position": [
+        560,
+        100
+      ],
+      "id": "764c0414-28a4-41b6-aee7-31d6b0daf3f6",
+      "name": "Loop Over Items"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "loose",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "6bf950fb-fd8b-4e97-877e-27cf73609699",
+              "leftValue": "={{ $json.error }}",
+              "rightValue": "",
+              "operator": {
+                "type": "string",
+                "operation": "empty",
+                "singleValue": true
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "looseTypeValidation": true,
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        1000,
+        -300
+      ],
+      "id": "fb18bd02-c683-494c-80ad-4c3c8deeff7f",
+      "name": "If1"
+    },
+    {
+      "parameters": {
+        "modelId": {
+          "__rl": true,
+          "value": "gpt-4o-mini",
+          "mode": "list",
+          "cachedResultName": "GPT-4O-MINI"
+        },
+        "messages": {
+          "values": [
+            {
+              "content": "=Why does Wayback Machine gave this error:\n{{ $('If').item.json.error.message }}\n\n\nOn this URL request: {{ $('Google Sheets').item.json.URLs }}\n\nExplain under 50 words.\n"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.openAi",
+      "typeVersion": 1.8,
+      "position": [
+        1400,
+        -140
+      ],
+      "id": "fdc0e6d4-c8bc-4278-9352-c7e44d17fb24",
+      "name": "OpenAI",
+      "credentials": {
+        "openAiApi": {
+          "id": "1oFPXIsh98Wl6sP4",
+          "name": "OpenAi account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "content": "## Error Handling",
+        "height": 380,
+        "color": 3
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        920,
+        -360
+      ],
+      "typeVersion": 1,
+      "id": "e17161e2-df3e-41d2-8df2-3abc07a07c27",
+      "name": "Sticky Note"
+    },
+    {
+      "parameters": {
+        "content": "# Notifiers",
+        "height": 420,
+        "width": 400
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        1880,
+        -180
+      ],
+      "typeVersion": 1,
+      "id": "f736df43-8f1f-425b-8bab-21ff4efc5908",
+      "name": "Sticky Note1"
+    },
+    {
+      "parameters": {
+        "content": "## Data Gathering/Sorting\n",
+        "height": 260,
+        "width": 620,
+        "color": 6
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        80,
+        20
+      ],
+      "id": "b29a102d-c91b-4ff8-8532-cebf860801ae",
+      "name": "Sticky Note7"
+    }
+  ],
+  "connections": {
+    "Schedule Trigger": {
+      "main": [
+        [
+          {
+            "node": "Google Sheets",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Google Sheets": {
+      "main": [
+        [
+          {
+            "node": "Loop Over Items",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "HTTP Request": {
+      "main": [
+        [
+          {
+            "node": "If",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "HTML": {
+      "main": [
+        [
+          {
+            "node": "If1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Code": {
+      "main": [
+        [
+          {
+            "node": "Slack",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Slack": {
+      "main": [
+        [
+          {
+            "node": "Wait",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Wait": {
+      "main": [
+        [
+          {
+            "node": "Loop Over Items",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "If": {
+      "main": [
+        [
+          {
+            "node": "HTML",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Slack1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Slack1": {
+      "main": [
+        [
+          {
+            "node": "Loop Over Items",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Loop Over Items": {
+      "main": [
+        [],
+        [
+          {
+            "node": "HTTP Request",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "If1": {
+      "main": [
+        [
+          {
+            "node": "Code",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "OpenAI",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "OpenAI": {
+      "main": [
+        [
+          {
+            "node": "Slack1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "pinData": {},
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "d2b7cf81121c611e04e37ce64f2706db52ec05f19dd69a555bbe166e666b567e"
+  }
+}
